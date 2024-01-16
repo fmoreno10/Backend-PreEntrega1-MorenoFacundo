@@ -1,0 +1,19 @@
+{
+  "name": "preentrega1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fmoreno10/Backend-PreEntrega1-MorenoFacundo.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fmoreno10/Backend-PreEntrega1-MorenoFacundo/issues"
+  },
+  "homepage": "https://github.com/fmoreno10/Backend-PreEntrega1-MorenoFacundo#readme"
+}
