@@ -1,36 +1,17 @@
 import express from 'express';
-import oProductManager from './ProductManager.js';
+// import __dirname from './utils.js'
+import { productsRouter } from './routes/products.router.js';
+import { cartsRouter } from './routes/carts.router.js';
 
 const app = express();
 
-app.use(express.urlencoded({ extended: true })) 
-app.use(express.json()) 
+app.use(express.urlencoded({ extended: true })) // Para usar forms
+app.use(express.json())
+app.use('/api/', productsRouter);
+app.use('/api/', cartsRouter);
 
 app.get("/ping", (req, res) => {
     res.send("pong");
-});
-
-app.get("/products", async (req, res) => {
-    let limit = parseInt(req.query.limit);
-    let oProducts = await oProductManager.getProducts(limit);    
-    res.send(oProducts);
-});
-
-app.get("/carts", async (req, res) => {
-    let limit = parseInt(req.query.limit);
-    let oProducts = await oProductManager.getProducts(limit);    
-    res.send(oProducts);
-});
-
-app.get("/products/:id", async (req, res) => {    
-    let id = parseInt(req.params.id);
-    let oProduct = await oProductManager.getProductById(id);   
-    
-    if(oProduct){
-        res.json(oProduct);
-    }else{        
-        res.status(400).send(`No se encontro el producto con ID= ${id}`);
-    }    
 });
 
 app.listen(8080, () => {

@@ -2,29 +2,29 @@ import fs2 from 'fs';
 import fs from 'fs/promises';
 
 class Product {
-    static #newProductID = 0;
+    static #newProductID = 1;
 
-    constructor({ title, description, price, thumbnail, code, stock }) {
+    constructor({ title, description, price, thumbnails, code, stock, status = true, category }) {
         // Validaciones
-        if (!title || !description || !price || !thumbnail || !code || !stock) throw new Error('Los campos no pueden estar vacíos.');
+        if (!title || !description || !price || !thumbnails || !code || !stock || !category) throw new Error('Los campos no pueden estar vacíos.');
 
         this.title = title;
         this.description = description;
         this.price = price;
-        this.thumbnail = thumbnail;
+        this.thumbnails = thumbnails;
         this.code = code;
         this.stock = stock;
         this.id = Product.#newProductID++;
+        this.status = status;
+        this.category = category;
     }
 
 }
 
 class ProductManager {
     #path;
-    #products;
     constructor(path) {
         this.#path = path;
-        this.#products = [];
     }
 
     /*
@@ -34,37 +34,46 @@ class ProductManager {
     
     */
     async addProduct(oProduct) {
-        let id = -1;
+        let id = 0;
         let productsInFile;
+        let oProducts = [];
 
         if (fs2.existsSync(this.#path)) {
             try {
                 // leo los productos almacenados previamente
                 productsInFile = await fs.readFile(this.#path, 'utf-8');
-            } catch (err) {
-                console.log(err);
+
+                // convierto lo leído en el archivo en objetos
+                oProducts = JSON.parse(productsInFile);
+
+                if (oProducts.some(product => product.code === oProduct.code)) {
+                    // No se carga el producto si tiene el mismo codigo
+                    return -1;
+                }
+
+            } catch (error) {
+                console.log(error);
                 return id;
             }
-        }        // convierto lo leído en el archivo en objetos
-        const oProducts = JSON.parse(productsInFile);
-
-        if (this.#products.some(product => product.code === oProduct.code)) {
-            id = 0;
-        } else {
-            const oNewProduct = new Product(oProduct);
-
-            id = oNewProduct.id;
-            this.#products.push(oNewProduct);
-            // escribo al archivo el array de productos convertido a texto , le agrego identación para legilibilidad (2)
-            await fs.writeFile(this.#path, JSON.stringify(this.#products, null, 2));
-
         }
 
+        const oNewProduct = new Product(oProduct);
+
+        id = oNewProduct.id;
+
+        oProducts.push(oNewProduct);
+        try {
+            // escribo al archivo el array de productos convertido a texto , le agrego identación para legilibilidad (2)
+            await fs.writeFile(this.#path, JSON.stringify(oProducts, null, 2));
+        } catch (error) {
+            console.log(error);
+            return id;
+        }
 
         return id;
     }
 
-    async updateProduct(productID, newProduct) {
+    async updateProduct(productID, fieldsToUpdate) {
         let id;
         let productsInFile;
         try {
@@ -76,20 +85,28 @@ class ProductManager {
         }
         //NO DEBE BORRARSE SU ID 
         const oProducts = JSON.parse(productsInFile);
-
+        
         // busco el producto a modificar
-        const updatedProduct = oProducts.find(product => product.id === productID);
+        const productToUpdate = oProducts.find(product => product.id === productID);
+        
+        // Creo un objeto con los campos del producto a actualizar 
+        const updatedProduct = {
+            ...productToUpdate,
+            ...fieldsToUpdate
+        };
 
-        updatedProduct = [id, ...newProduct]; 
 
         // Elimino el producto que coincide con el ID, creo un nuevo array que no lo incluya
         const newProducts = oProducts.filter(product => product.id !== productID);
 
         // Agrego el producto modificado
-        oProducts.push(updatedProduct);
+        newProducts.push(updatedProduct);
 
         // escribo al archivo el array de productos convertido a texto , le agrego identación para legilibilidad (2)
-        await fs.writeFile(this.#path, JSON.stringify(oProducts, null, 2));
+        await fs.writeFile(this.#path, JSON.stringify(newProducts, null, 2));
+
+        return updatedProduct;
+
     }
 
     async deleteProduct(productID) {
