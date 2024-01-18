@@ -11,7 +11,29 @@
     "category": "thunderCategory"
   },
   {
-    "title": "producto uno",
+    "title": "producto dos",
+    "description": "Este es un producto Thunder",
+    "price": 2550,
+    "thumbnails": [],
+    "code": "thunderCode2",
+    "stock": 75,
+    "id": 2,
+    "status": false,
+    "category": "thunderCategory"
+  },
+  {
+    "title": "producto tres",
+    "description": "Este es un producto Thunder",
+    "price": 2550,
+    "thumbnails": [],
+    "code": "thunderCode3",
+    "stock": 75,
+    "id": 3,
+    "status": false,
+    "category": "thunderCategory"
+  },
+  {
+    "title": "producto cuatro",
     "description": "Este es un producto Thunder",
     "price": 2550,
     "thumbnails": [],
@@ -22,7 +44,7 @@
     "category": "thunderCategory"
   },
   {
-    "title": "producto uno",
+    "title": "producto cinco",
     "description": "Este es un producto Thunder",
     "price": 2550,
     "thumbnails": [],

@@ -3,20 +3,13 @@ import fs from 'fs/promises';
 
 class Cart {
     static #newCartID = 1;
+    products = [];
 
-    constructor({ title, description, price, thumbnails, code, stock, status = true, category }) {
-        // Validaciones
-        if (!title || !description || !price || !thumbnails || !code || !stock || !category) throw new Error('Los campos no pueden estar vacíos.');
-
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.thumbnails = thumbnails;
-        this.code = code;
-        this.stock = stock;
+    constructor(oProducts) {
+        
         this.id = Cart.#newCartID++;
-        this.status = status;
-        this.category = category;
+        this.products = oProducts;
+        console.log(this);
     }
 
 }
@@ -66,7 +59,7 @@ class CartManager {
         return id;
     }
 
-    async updateCart(cartID, fieldsToUpdate) {
+    async updateCart(cartID, productID) {
         let id;
         let cartsInFile;
         try {
@@ -76,29 +69,27 @@ class CartManager {
             console.log(err);
             return id;
         }
-        //NO DEBE BORRARSE SU ID 
+        // Convierto el texto en objetos 
         const oCarts = JSON.parse(cartsInFile);
 
         // busco el carrito a modificar
         const cartToUpdate = oCarts.find(cart => cart.id === cartID);
         
-        // Creo un objeto con los campos del carrito a actualizar 
-        const updatedCart = {
-            ...cartToUpdate,
-            ...fieldsToUpdate
-        };
+        // Busco en el array de productos del carrito el ID
+        const productInCart = cartToUpdate.products.find(p => p.product === productID);
 
-
-        // Elimino el carrito que coincide con el ID, creo un nuevo array que no lo incluya
-        const newCarts = oCarts.filter(cart => cart.id !== cartID);
-
-        // Agrego el carrito modificado
-        newCarts.push(updatedCart);
+        if (productInCart) {
+            // Si existe, actualizo la cantidad
+            productInCart.quantity++;            
+        }else{
+            // Sino, lo agrego
+            cartToUpdate.products.push( {product: productID, quantity: 1 });            
+        }
 
         // escribo al archivo el array de carritos convertido a texto , le agrego identación para legilibilidad (2)
-        await fs.writeFile(this.#path, JSON.stringify(newCarts, null, 2));
+        await fs.writeFile(this.#path, JSON.stringify(oCarts, null, 2));
 
-        return updatedCart;
+        return cartToUpdate;
 
     }
 
@@ -161,6 +152,23 @@ class CartManager {
         const oCarts = JSON.parse(cartsInFile);
 
         return oCarts.find(cart => cart.id === cartID);
+
+    }
+
+    // Devuelve los productos del carrito con el ID especificado
+    async getCartProducts(cartID) {
+        let cartsInFile;
+        try {
+            // leo los carritos almacenados previamente
+            cartsInFile = await fs.readFile(this.#path, 'utf-8');
+        } catch (err) {
+            console.log(err);
+            return id;
+        }
+        // convierto lo leído en el archivo en objetos
+        const oCarts = JSON.parse(cartsInFile);
+
+        return oCarts.find(cart => cart.id === cartID).products;
 
     }
 
